@@ -1,0 +1,130 @@
+.terminal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.8);
+  font-family: "Courier New", monospace;
+  color: #f0f0f0;
+}
+
+.terminalHeader {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  padding: 8px 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.terminalButtons {
+  display: flex;
+  gap: 8px;
+  margin-right: 16px;
+}
+
+.closeBtn,
+.minimizeBtn,
+.maximizeBtn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.closeBtn {
+  background-color: #ff5f56;
+}
+
+.minimizeBtn {
+  background-color: #ffbd2e;
+}
+
+.maximizeBtn {
+  background-color: #27c93f;
+}
+
+.terminalTitle {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.terminalBody {
+  flex-grow: 1;
+  background-color: #1e1e1e;
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.terminalContent {
+  white-space: pre-wrap;
+}
+
+.terminalLine {
+  margin-bottom: 8px;
+}
+
+.prompt {
+  color: #00ff9c;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.responseText {
+  color: #cccccc;
+  white-space: pre;
+}
+
+.cursor {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  background-color: #f0f0f0;
+  margin-left: 2px;
+  position: relative;
+  top: 3px;
+}
+
+.blink {
+  animation: blink 1.06s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* テーブル表示のためのスタイル */
+.responseText table {
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.responseText th,
+.responseText td {
+  border: 1px solid #444;
+  padding: 5px 10px;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .terminalBody {
+    font-size: 14px;
+  }
+}
