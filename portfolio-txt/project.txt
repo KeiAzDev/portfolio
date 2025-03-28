@@ -1,0 +1,455 @@
+# Next.js + Express + MongoDB ポートフォリオ構築ガイド
+
+このガイドでは、Next.js、Express、MongoDB、Mongoose、Jestを使用したフルスタックポートフォリオサイトの構築方法を段階的に説明します。Vercelへのデプロイ方法も含みます。
+
+## 使用技術スタック
+
+- **フロントエンド**: Next.js (React)
+- **バックエンド**: Express.js + Node.js
+- **データベース**: MongoDB + Mongoose
+- **テスト**: Jest
+- **デプロイ**: Vercel (フロントエンド) + Vercel Serverless Functions (バックエンド)
+
+## 1. プロジェクトセットアップ
+
+### Next.jsプロジェクトの作成
+
+```bash
+# Next.jsプロジェクトの作成
+npx create-next-app@latest portfolio
+cd portfolio
+
+# 必要なパッケージのインストール
+npm install axios mongoose
+npm install -D jest @testing-library/react @testing-library/jest-dom jest-environment-jsdom
+```
+
+### プロジェクト構成
+
+```
+portfolio/
+├── components/           # 再利用可能なコンポーネント
+│   ├── Layout.js         # 共通レイアウト
+│   ├── Navbar.js         # ナビゲーションバー
+│   └── ProjectCard.js    # プロジェクト表示用カード
+├── lib/
+│   └── dbConnect.js      # MongoDB接続設定
+├── models/               # Mongooseモデル
+│   ├── Project.js        # プロジェクト情報モデル
+│   └── Contact.js        # お問い合わせモデル
+├── pages/
+│   ├── api/              # APIルート (serverless functions)
+│   │   ├── projects/     # プロジェクト関連API
+│   │   └── contact.js    # お問い合わせAPI
+│   ├── _app.js
+│   ├── index.js          # ホームページ
+│   ├── about.js          # 自己紹介ページ
+│   ├── projects/         # プロジェクトページ
+│   └── contact.js        # お問い合わせページ
+├── public/               # 静的ファイル
+├── styles/               # CSSファイル
+├── tests/                # テストファイル
+├── .env.local            # 環境変数
+├── next.config.js        # Next.js設定
+├── jest.config.js        # Jest設定
+└── package.json
+```
+
+## 2. MongoDB接続設定
+
+### `.env.local` ファイルの作成
+
+```
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/portfolio?retryWrites=true&w=majority
+```
+
+### MongoDB接続設定 (`lib/dbConnect.js`)
+
+```javascript
+import mongoose from 'mongoose';
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable');
+}
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function dbConnect() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      return mongoose;
+    });
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+export default dbConnect;
+```
+
+## 3. Mongooseモデルの作成
+
+### プロジェクトモデル (`models/Project.js`)
+
+```javascript
+import mongoose from 'mongoose';
+
+const ProjectSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'プロジェクト名は必須です'],
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: [true, '説明は必須です'],
+  },
+  imageUrl: {
+    type: String,
+  },
+  technologies: {
+    type: [String],
+    default: [],
+  },
+  githubUrl: {
+    type: String,
+  },
+  liveUrl: {
+    type: String,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
+});
+
+export default mongoose.models.Project || mongoose.model('Project', ProjectSchema);
+```
+
+### お問い合わせモデル (`models/Contact.js`)
+
+```javascript
+import mongoose from 'mongoose';
+
+const ContactSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, '名前は必須です'],
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: [true, 'メールアドレスは必須です'],
+    trim: true,
+  },
+  message: {
+    type: String,
+    required: [true, 'メッセージは必須です'],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
+});
+
+export default mongoose.models.Contact || mongoose.model('Contact', ContactSchema);
+```
+
+## 4. APIルートの作成
+
+### プロジェクト一覧取得 (`pages/api/projects/index.js`)
+
+```javascript
+import dbConnect from '../../../lib/dbConnect';
+import Project from '../../../models/Project';
+
+export default async function handler(req, res) {
+  const { method } = req;
+
+  await dbConnect();
+
+  switch (method) {
+    case 'GET':
+      try {
+        const projects = await Project.find({});
+        res.status(200).json({ success: true, data: projects });
+      } catch (error) {
+        res.status(400).json({ success: false });
+      }
+      break;
+    case 'POST':
+      try {
+        const project = await Project.create(req.body);
+        res.status(201).json({ success: true, data: project });
+      } catch (error) {
+        res.status(400).json({ success: false });
+      }
+      break;
+    default:
+      res.status(400).json({ success: false });
+      break;
+  }
+}
+```
+
+### お問い合わせフォーム (`pages/api/contact.js`)
+
+```javascript
+import dbConnect from '../../lib/dbConnect';
+import Contact from '../../models/Contact';
+
+export default async function handler(req, res) {
+  const { method } = req;
+
+  await dbConnect();
+
+  switch (method) {
+    case 'POST':
+      try {
+        const contact = await Contact.create(req.body);
+        res.status(201).json({ success: true, data: contact });
+      } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+      }
+      break;
+    default:
+      res.status(400).json({ success: false });
+      break;
+  }
+}
+```
+
+## 5. フロントエンドのコンポーネント作成
+
+### プロジェクトカード (`components/ProjectCard.js`)
+
+```javascript
+import Image from 'next/image';
+import Link from 'next/link';
+
+export default function ProjectCard({ project }) {
+  return (
+    <div className="border rounded-lg overflow-hidden shadow-lg">
+      {project.imageUrl && (
+        <div className="relative w-full h-48">
+          <Image 
+            src={project.imageUrl} 
+            alt={project.title}
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
+      
+      <div className="p-4">
+        <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
+        <p className="text-gray-700 mb-4">{project.description}</p>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.technologies.map((tech, index) => (
+            <span 
+              key={index}
+              className="bg-gray-200 px-2 py-1 rounded-md text-sm"
+            >
+              {tech}
+            </span>
+          ))}
+        </div>
+        
+        <div className="flex gap-4">
+          {project.githubUrl && (
+            <Link href={project.githubUrl}>
+              <span className="text-blue-600 hover:underline">GitHub</span>
+            </Link>
+          )}
+          {project.liveUrl && (
+            <Link href={project.liveUrl}>
+              <span className="text-blue-600 hover:underline">Live Demo</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### プロジェクト一覧ページ (`pages/projects/index.js`)
+
+```javascript
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Layout from '../../components/Layout';
+import ProjectCard from '../../components/ProjectCard';
+
+export default function Projects() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { data } = await axios.get('/api/projects');
+        setProjects(data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('プロジェクトの取得に失敗しました:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8">
+          <h1 className="text-3xl font-bold mb-8">プロジェクト</h1>
+          <p>読み込み中...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-8">プロジェクト</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <ProjectCard key={project._id} project={project} />
+          ))}
+        </div>
+      </div>
+    </Layout>
+  );
+}
+```
+
+## 6. Jestでのテスト設定
+
+### Jest設定ファイル (`jest.config.js`)
+
+```javascript
+const nextJest = require('next/jest');
+
+const createJestConfig = nextJest({
+  dir: './',
+});
+
+/** @type {import('jest').Config} */
+const customJestConfig = {
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleDirectories: ['node_modules', '<rootDir>/'],
+  testEnvironment: 'jest-environment-jsdom',
+};
+
+module.exports = createJestConfig(customJestConfig);
+```
+
+### Jest設定追加ファイル (`jest.setup.js`)
+
+```javascript
+import '@testing-library/jest-dom/extend-expect';
+```
+
+### コンポーネントのテスト例 (`tests/ProjectCard.test.js`)
+
+```javascript
+import { render, screen } from '@testing-library/react';
+import ProjectCard from '../components/ProjectCard';
+
+describe('ProjectCard', () => {
+  const mockProject = {
+    title: 'テストプロジェクト',
+    description: 'これはテスト用のプロジェクトです',
+    technologies: ['React', 'Next.js', 'MongoDB'],
+    githubUrl: 'https://github.com/test/project',
+    liveUrl: 'https://test-project.com',
+  };
+
+  it('プロジェクト情報が正しく表示されること', () => {
+    render(<ProjectCard project={mockProject} />);
+    
+    expect(screen.getByText('テストプロジェクト')).toBeInTheDocument();
+    expect(screen.getByText('これはテスト用のプロジェクトです')).toBeInTheDocument();
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByText('Next.js')).toBeInTheDocument();
+    expect(screen.getByText('MongoDB')).toBeInTheDocument();
+    expect(screen.getByText('GitHub')).toBeInTheDocument();
+    expect(screen.getByText('Live Demo')).toBeInTheDocument();
+  });
+});
+```
+
+## 7. package.jsonのスクリプト設定
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "test": "jest",
+  "test:watch": "jest --watch"
+}
+```
+
+## 8. Vercelへのデプロイ
+
+1. GitHubリポジトリにプロジェクトをプッシュします
+2. Vercelアカウントを作成し、GitHubリポジトリを連携します
+3. 以下の環境変数を設定します:
+   - `MONGODB_URI`: MongoDB接続文字列
+
+## 段階的な開発プラン
+
+プロジェクトを少しずつ進めるためのステップバイステップガイド:
+
+### フェーズ1: 基本セットアップ
+1. Next.jsプロジェクト作成
+2. 基本レイアウトとナビゲーション作成
+3. MongoDB接続設定
+4. 最初のテスト作成と実行
+
+### フェーズ2: プロジェクト機能実装
+1. Projectモデル作成
+2. プロジェクト表示用APIエンドポイント実装
+3. プロジェクト一覧表示ページ作成
+4. 個別プロジェクト詳細ページ作成
+
+### フェーズ3: お問い合わせ機能実装
+1. Contactモデル作成
+2. お問い合わせフォーム作成
+3. お問い合わせ送信処理実装
+
+### フェーズ4: スタイリングとUI改善
+1. レスポンシブデザイン対応
+2. アニメーションと遷移効果追加
+3. ダークモード対応（オプション）
+
+### フェーズ5: テストとデプロイ
+1. 各コンポーネントとAPIのテスト作成
+2. E2Eテスト追加（オプション）
+3. Vercelへのデプロイ設定
+4. 本番環境でのテスト
