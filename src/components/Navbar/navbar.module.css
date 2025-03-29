@@ -1,0 +1,324 @@
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(-90deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-90deg);
+  }
+}
+
+@keyframes fadeInNoRotate {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 60px;
+  height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  z-index: 20;
+
+  /* アニメーションを追加 */
+  animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: white;
+  margin-bottom: 20px;
+
+  /* アニメーションを追加 */
+  opacity: 0;
+  animation: fadeInNoRotate 0.5s ease forwards;
+  animation-delay: 0.1s;
+}
+
+.monogram {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.logo:hover .monogram {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  /* 項目間の間隔を広く */
+  margin-top: 10px;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  transform: rotate(-90deg);
+  padding: 5px 15px;
+  white-space: nowrap;
+  width: 100px;
+  /* 幅を固定 */
+  text-align: center;
+
+  /* アニメーションを追加 */
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+  animation-delay: calc(0.2s + var(--item-index) * 0.1s);
+}
+
+.navLink:hover,
+.navLink:active,
+.navLink[aria-current="page"] {
+  color: white;
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: #007aff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.navLink:hover::after,
+.navLink:active::after,
+.navLink[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+.navLink[aria-current="page"] {
+  font-weight: 500;
+}
+
+.navLink[aria-current="page"]::after {
+  background: #007aff;
+  opacity: 1;
+}
+
+.socialLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+
+  /* アニメーションを追加 */
+  opacity: 0;
+  animation: fadeInNoRotate 0.5s ease forwards;
+  animation-delay: 0.8s;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.3s ease;
+
+  /* アニメーションを追加 */
+  opacity: 0;
+  animation: fadeInNoRotate 0.5s ease forwards;
+  animation-delay: calc(0.8s + var(--icon-index) * 0.1s);
+}
+
+.socialLink:hover {
+  color: #007aff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.socialLink svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mobile Menu Button - モバイル表示用 */
+.menuButton {
+  display: none;
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 200;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 12px;
+}
+
+.menuIcon {
+  display: block;
+  width: 24px;
+  height: 2px;
+  margin: 5px 0;
+  background-color: #fff;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.menuOpen .menuIcon:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menuOpen .menuIcon:nth-child(2) {
+  opacity: 0;
+}
+
+.menuOpen .menuIcon:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Navigation - モバイル表示用 */
+.mobileNav {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 150;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-100%);
+  transition: transform 0.5s ease;
+}
+
+.mobileNavVisible {
+  transform: translateY(0);
+}
+
+.mobileNavLink {
+  width: 100%;
+  font-size: 22px;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  padding: 18px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  position: relative;
+}
+
+.mobileNavVisible .mobileNavLink {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobileNavLink::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 30%;
+  left: 30%;
+  height: 4px;
+  background: #007aff;
+  transform: scaleX(0) translateY(-1px);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.mobileNavLink:hover::after,
+.mobileNavLink:active::after,
+.mobileNavLink:focus::after {
+  transform: scaleX(1) translateY(-1px);
+  transform-origin: left;
+}
+
+/* レスポンシブスタイル */
+@media (max-width: 768px) {
+  .navbar {
+    display: none;
+  }
+
+  .menuButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobileNav {
+    display: flex;
+  }
+}
