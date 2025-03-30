@@ -140,7 +140,7 @@ export default function Preloader({ onFinish }) {
             setCurrentTyping((prev) => prev + newChar);
             setCurrentCharIndex(currentCharIndex + 1);
           },
-          skipAnimation ? 5 : 15 + Math.random() * 10, // 高速化: 元は 30 + Math.random() * 30
+          skipAnimation ? 5 : 10 + Math.random() * 10, // 高速化: 元は 30 + Math.random() * 30
         );
         return () => clearTimeout(timer);
       } else {

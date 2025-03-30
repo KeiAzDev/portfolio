@@ -8,7 +8,7 @@
 
 .svg {
   width: 70px;
-  height: 150px;
+  height: 140px;
   color: #1a8cff;
   transition: color 0.3s ease;
 }
@@ -21,19 +21,22 @@
 .path {
   stroke-dasharray: 1200;
   stroke-dashoffset: 1200;
-  animation: draw 6.5s ease-in-out forwards;  /* アニメーション時間を6.5秒に延長 */
+  animation: draw 8s ease-in-out forwards;
+  /* アニメーション時間を6.5秒に延長 */
 }
 
 .pathFirst {
-  animation-delay: 0s;
+  animation-delay: 1s;
 }
 
 .pathSecond {
-  animation-delay: 1.2s;  /* 遅延時間も調整 */
+  animation-delay: 2.3s;
+  /* 遅延時間も調整 */
 }
 
 .pathThird {
-  animation-delay: 2.4s;  /* 遅延時間も調整 */
+  animation-delay: 3.5s;
+  /* 遅延時間も調整 */
 }
 
 @keyframes draw {

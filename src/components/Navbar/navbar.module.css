@@ -52,7 +52,7 @@
   z-index: 20;
 
   /* アニメーションを追加 */
-  animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideDown 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: top;
 }
 
