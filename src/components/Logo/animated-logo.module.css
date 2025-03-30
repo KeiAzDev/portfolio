@@ -1,0 +1,43 @@
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.svg {
+  width: 70px;
+  height: 150px;
+  color: #1a8cff;
+  transition: color 0.3s ease;
+}
+
+.logoContainer:hover .svg {
+  color: #4dabff;
+  filter: drop-shadow(0 0 8px rgba(0, 140, 255, 0.8));
+}
+
+.path {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: draw 6.5s ease-in-out forwards;  /* アニメーション時間を6.5秒に延長 */
+}
+
+.pathFirst {
+  animation-delay: 0s;
+}
+
+.pathSecond {
+  animation-delay: 1.2s;  /* 遅延時間も調整 */
+}
+
+.pathThird {
+  animation-delay: 2.4s;  /* 遅延時間も調整 */
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

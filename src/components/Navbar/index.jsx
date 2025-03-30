@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import styles from "./navbar.module.css";
+import AnimatedLogo from "../Logo/AnimatedLogo";
 
 // ナビゲーションリンク
 const navLinks = [
@@ -81,7 +82,7 @@ export function Navbar() {
       <header className={styles.navbar}>
         {/* ロゴ */}
         <Link href="/" className={styles.logo}>
-          <div className={styles.monogram}>K</div>
+          <AnimatedLogo />
         </Link>
 
         {/* ナビゲーションリンク */}

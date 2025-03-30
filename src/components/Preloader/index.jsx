@@ -243,7 +243,7 @@ export default function Preloader({ onFinish }) {
       // 3秒後にプリローダーを終了
       setTimeout(() => {
         if (onFinish) onFinish();
-      }, 3000);
+      }, 2000);
     }
   }, [loadingComplete, isLoadingAssets, onFinish]);
 
